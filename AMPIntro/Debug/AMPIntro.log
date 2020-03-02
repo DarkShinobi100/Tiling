@@ -1,0 +1,4 @@
+﻿  intro_amp.cpp
+\\StuHomeEven\HomeDrive8$\1901418\GitHub\AMPIntro\AMPIntro\intro_amp.cpp(55,20): warning C4018:  '<': signed/unsigned mismatch
+\\StuHomeEven\HomeDrive8$\1901418\GitHub\AMPIntro\AMPIntro\intro_amp.cpp(89,20): warning C4018:  '<': signed/unsigned mismatch
+  AMPIntro.vcxproj -> \\StuHomeEven\HomeDrive8$\1901418\GitHub\AMPIntro\AMPIntro\Debug\AMPIntro.exe
