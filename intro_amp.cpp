@@ -94,7 +94,7 @@ void vector_add(const int size, const std::vector<double>& v1, const std::vector
 	the_serial_clock::time_point end = the_serial_clock::now();
 	//Compute the difference between the two times in milliseconds
 	auto time_taken = duration_cast<milliseconds>(end - start).count();
-	cout << "Adding the vectors serially usin the CPU " << time_taken << " ms." << endl;
+	cout << "Adding the vectors serially using the CPU " << time_taken << " ms." << endl;
 } // vector_add
 
   // Accelerated  element-wise addition of arbitrary length vectors using C++ 11 container vector class 
@@ -150,5 +150,35 @@ int main(int argc, char* argv[])
 } // main
 
 
+void vector_add_tiled_amp(const int size, const std::vector<double>& v1, const std::vector<double>& v2, std::vector<double>& v3)
+{
+	const int TS = 1024;
+	concurrency::array_view<const double> av1(size, v1);
+	concurrency::array_view<const double> av2(size, v2);
+	extent<1> e(size);
+	concurrency::array_view<double> av3(e, v3);
+	av3.discard_data();
+	// start clock for GPU version after array allocation
+	the_amp_clock::time_point start = the_amp_clock::now();
+	// It is wise to use exception handling here - AMP can fail for many reasons
+	// and it useful to know why (e.g. using double precision when there is limited or no support)
+	try
+	{
+		concurrency::parallel_for_each(av3.extent.tile<TS>(), [=](concurrency::tiled_index<TS> t_idx)  restrict(amp)
+			{
+				int idx = t_idx.global[0];
+				av3[idx] = av1[idx] + av2[idx];
 
-
+			});
+		av3.synchronize();
+	}
+	catch (const Concurrency::runtime_exception& ex)
+	{
+		MessageBoxA(NULL, ex.what(), "Error", MB_ICONERROR);
+	}
+	// Stop timing
+	the_amp_clock::time_point end = the_amp_clock::now();
+	// Compute the difference between the two times in milliseconds
+	auto time_taken = duration_cast<milliseconds>(end - start).count();
+	cout << "Adding the vectors using AMP (data transfer and compute) takes " << time_taken << " ms." << endl;
+} // vector_add_amp
